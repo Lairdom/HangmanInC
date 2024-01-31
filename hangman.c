@@ -33,6 +33,12 @@ void PrintLogo() {
 
 // Tarkista onko kirjain sopiva tai onko se syötetty aiemmin
 int CheckLetter(char *kirjain, char *kirjainJono) {
+    printf("%d\n", *kirjain);
+    if (strlen(kirjain) == 0) {
+        //Ääkkösten käsittely
+        printf("Error: Syötit ääkkösiä");
+        return 2;
+    }
     for (int i = 0; i<=strlen(kirjainJono); i++) {
         if (*kirjain == kirjainJono[i]) {
             return 1;
@@ -234,9 +240,9 @@ void main() {
             printf("Syötit saman merkin %c toistamiseen. \n", arvaus);
             //printf("%s", joSyotetyt);
         }
-        else {
+        else if (CheckLetter(&arvaus, joSyotetyt) == 0) {
             joSyotetyt[index] = arvaus;        // Lisätään syötetty merkki joSyotetyt merkkijonoon
-            //printf("%s", joSyotetyt);
+            printf("%s", joSyotetyt);
             index++;
 
             // Vaihe 5: Vertaa syötettyä kirjainta sanan kaikkiin merkkeihin (case insensitive)
@@ -276,6 +282,5 @@ void main() {
 }
 
 // TODO: 
-// 1) Ota muistiin syötetyt kirjaimet jotta samaa kirjainta ei voi syöttää montaa kertaa (se lisää osumia joka kerralla muutoin)
-// 2) Ääkkösten kösittely
-// 3) Näytä jo syötetyt kirjaimet ja oliko ne osumia vai ei (BONUS)
+// 1) Ääkkösten kösittely
+// 2) Tiedostosta sanojen haku (BONUS)
