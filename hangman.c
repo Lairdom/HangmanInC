@@ -4,12 +4,13 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 char* GenerateWord();
 void PrintLogo();
 void VisibleWord(char*, char*, bool, int);
 void PrintHangman(int, char*);
-int CheckLetter(char*, char*);
+int CheckLetter(unsigned char*, unsigned char*);
 
 
 //Valitse sana randomilla listasta ja palauta se funktiosta
@@ -32,17 +33,30 @@ void PrintLogo() {
 }
 
 // Tarkista onko kirjain sopiva tai onko se syötetty aiemmin
-int CheckLetter(char *kirjain, char *kirjainJono) {
-    printf("%d\n", *kirjain);
-    if (strlen(kirjain) == 0) {
-        //Ääkkösten käsittely
-        printf("Error: Syötit ääkkösiä");
-        return 2;
-    }
+int CheckLetter(unsigned char *kirjain, unsigned char *kirjainJono) {
+    //printf("%d\n", *kirjain);
+    // Tarkista onko kirjain jo aiemmin syötetty
     for (int i = 0; i<=strlen(kirjainJono); i++) {
         if (*kirjain == kirjainJono[i]) {
             return 1;
         }
+    }
+    // ÄÄkkösten käsittely
+    if (*kirjain > 130) {
+        //Ääkkösten käsittely
+        if (*kirjain == 132 || *kirjain == 142) {
+            //Kirjain ä
+            
+        }
+        else if (*kirjain == 148 || *kirjain == 153) {
+            //Kirjain ö
+            
+        }
+        else if (*kirjain == 134 || *kirjain == 143) {
+            //Kirjain å
+            
+        }
+        return 2;
     }
     return 0;
 }
@@ -204,16 +218,22 @@ void PrintHangman(int virheidenMaara, char *teksti) {
 }
 
 void main() {
-    char arvaus;
+    unsigned char arvaus;
     char tulostusrivi[30] = "";
-    char joSyotetyt[30] = "";
+    unsigned char joSyotetyt[30] = "";
     int virheita = 0;
     bool voitto = false;
     bool osuma = false;
     int osumia = 0;
     int index = 0;
     char teksti[15] = "";
+    char *ptrArvaus, *ptrJoSyotetyt;
 
+    setlocale(LC_ALL, "fi-FI.utf-8");
+    if(setlocale(LC_ALL, "fi-FI.utf-8") == NULL){
+        perror("setlocale failed");
+        exit(1);
+    }
     PrintLogo();
 
     // Vaihe 1: Valitse sana luettelosta randomilla
@@ -234,15 +254,24 @@ void main() {
         // Vaihe 4: Pelaaja arvaa kirjaimen
         printf("\nSyötä kirjain: ");
         scanf(" %c", &arvaus);                  //välimerkki ennen %c jotta vältytään \n jäämistä lukumuistiin
+        //printf("Syötit: %c\n", arvaus);
+        ptrArvaus = &arvaus;
 
-        // Vaihe 4.1: Verrataan arvoja jo syötettyihin ja jos on sama merkki uudestaan niin lisätään virheitä yhdellä
+        // Vaihe 4.1: Verrataan arvoja jo syötettyihin
+        // jos on sama merkki uudestaan niin ei lisätä sitä syötettyihin eikä lisätä indexiä
+        // ei myöskään käydä vertaamassa sitä sanan kirjaimiin tai lisätä osumia
         if (CheckLetter(&arvaus, joSyotetyt) == 1) {
-            printf("Syötit saman merkin %c toistamiseen. \n", arvaus);
+            printf("\nSyötit saman merkin %c toistamiseen. ", arvaus);
             //printf("%s", joSyotetyt);
         }
+        // jos syötetty merkki on ääkkösiä
+        else if (CheckLetter(&arvaus, joSyotetyt) == 2) {
+            // Ääkköset
+        }
+        // jos ei ole sama merkki niin lisätään se syötettyihin ja lisätään indexiä
         else if (CheckLetter(&arvaus, joSyotetyt) == 0) {
-            joSyotetyt[index] = arvaus;        // Lisätään syötetty merkki joSyotetyt merkkijonoon
-            printf("%s", joSyotetyt);
+            joSyotetyt[index] = arvaus;
+            //printf("Syötetyt kirjaimet: %s", joSyotetyt);
             index++;
 
             // Vaihe 5: Vertaa syötettyä kirjainta sanan kaikkiin merkkeihin (case insensitive)
