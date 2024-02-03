@@ -10,3 +10,5 @@ Mikäli kirjainta ei löydy, lisätään virheiden määrää yhdellä ja tulost
 
 Sitten aloitetaan uusi kierros kysymällä uusi kirjain.
 Kierroksia jatketaan kunnes joko hirsipuu on valmis (10 virhettä) tai pelaaja on saanut kaikki kirjaimet sanasta näkyviin (voitto).
+
+Tuli ongelmia ääkkösten käsittelyssä. Jostain syystä WSCode ei näyttänyt ääkkösiä oikein niin ohjelman ajossa tulee käyttää windowsin omaa terminaalia.
