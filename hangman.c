@@ -5,12 +5,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <locale.h>
+#include <wchar.h>
 
 char* GenerateWord();
 void PrintLogo();
 void VisibleWord(char*, char*, bool, int);
 void PrintHangman(int, char*);
-int CheckLetter(unsigned char*, unsigned char*);
+int CheckLetter(wchar_t*, wchar_t*);
 
 
 //Valitse sana randomilla listasta ja palauta se funktiosta
@@ -33,30 +34,31 @@ void PrintLogo() {
 }
 
 // Tarkista onko kirjain sopiva tai onko se syötetty aiemmin
-int CheckLetter(unsigned char *kirjain, unsigned char *kirjainJono) {
-    //printf("%d\n", *kirjain);
-    // Tarkista onko kirjain jo aiemmin syötetty
-    for (int i = 0; i<=strlen(kirjainJono); i++) {
-        if (*kirjain == kirjainJono[i]) {
-            return 1;
-        }
+int CheckLetter(wchar_t *kirjain, wchar_t *kirjainJono) {
+    //wprintf(L"%d\n", *kirjain);
+    if(*kirjain == L'\n' || *kirjain == L'\r') {
+            *kirjain = L'\0';
     }
     // ÄÄkkösten käsittely
     if (*kirjain > 130) {
-        //Ääkkösten käsittely
         if (*kirjain == 132 || *kirjain == 142) {
             //Kirjain ä
-            
+            *kirjain = L'ä';
         }
         else if (*kirjain == 148 || *kirjain == 153) {
             //Kirjain ö
-            
+            *kirjain = L'ö';
         }
         else if (*kirjain == 134 || *kirjain == 143) {
             //Kirjain å
-            
+            *kirjain = L'å';
         }
-        return 2;
+    }
+    // Tarkista onko kirjain jo aiemmin syötetty
+    for (int i = 0; i<=wcslen(kirjainJono); i++) {
+        if (*kirjain == kirjainJono[i]) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -86,8 +88,6 @@ void VisibleWord(char *ptrWord, char *printedWord, bool format, int hitIndex) {
             printedWord[hitIndex*2] = ptrWord[hitIndex];
         }
     }
-    //strcpy(printedWord, shownWord);
-    //printf("\n%s\n", printedWord);
 }
 
 //Tulosta hirsipuu
@@ -218,17 +218,18 @@ void PrintHangman(int virheidenMaara, char *teksti) {
 }
 
 void main() {
-    unsigned char arvaus;
+    wchar_t arvaus;
     char tulostusrivi[30] = "";
-    unsigned char joSyotetyt[30] = "";
+    wchar_t joSyotetyt[30] = L"";
     int virheita = 0;
     bool voitto = false;
     bool osuma = false;
     int osumia = 0;
     int index = 0;
     char teksti[15] = "";
-    char *ptrArvaus, *ptrJoSyotetyt;
+    int merkkiarvo = 0;
 
+    // Määritetään locale niin ääkköset näkyy terminaalissa oikein
     setlocale(LC_ALL, "fi-FI.utf-8");
     if(setlocale(LC_ALL, "fi-FI.utf-8") == NULL){
         perror("setlocale failed");
@@ -238,11 +239,9 @@ void main() {
 
     // Vaihe 1: Valitse sana luettelosta randomilla
     char* sana = GenerateWord();
-    //printf("\n%s", sana);
 
     // Vaihe 2: Tulosta "_" jokaista sanan merkkiä kohti ja lisää välit
     VisibleWord(sana, tulostusrivi, true, -1);
-    //VisibleWord(sana, &tulostusrivi[0], true, -1);            //Toimii myös
     printf("\n%s", tulostusrivi);
 
     // Vaihe 3: Tulosta tyhjä kenttä
@@ -254,24 +253,20 @@ void main() {
         // Vaihe 4: Pelaaja arvaa kirjaimen
         printf("\nSyötä kirjain: ");
         scanf(" %c", &arvaus);                  //välimerkki ennen %c jotta vältytään \n jäämistä lukumuistiin
-        //printf("Syötit: %c\n", arvaus);
-        ptrArvaus = &arvaus;
+        
+        merkkiarvo = CheckLetter(&arvaus, joSyotetyt);
 
-        // Vaihe 4.1: Verrataan arvoja jo syötettyihin
+        // Vaihe 4.2: Verrataan arvoja jo syötettyihin
         // jos on sama merkki uudestaan niin ei lisätä sitä syötettyihin eikä lisätä indexiä
         // ei myöskään käydä vertaamassa sitä sanan kirjaimiin tai lisätä osumia
-        if (CheckLetter(&arvaus, joSyotetyt) == 1) {
-            printf("\nSyötit saman merkin %c toistamiseen. ", arvaus);
-            //printf("%s", joSyotetyt);
+        if (merkkiarvo == 1) {
+            wprintf(L"\nSyötit saman merkin %lc toistamiseen. ", arvaus);
         }
-        // jos syötetty merkki on ääkkösiä
-        else if (CheckLetter(&arvaus, joSyotetyt) == 2) {
-            // Ääkköset
-        }
+
         // jos ei ole sama merkki niin lisätään se syötettyihin ja lisätään indexiä
-        else if (CheckLetter(&arvaus, joSyotetyt) == 0) {
+        else if (merkkiarvo == 0) {
             joSyotetyt[index] = arvaus;
-            //printf("Syötetyt kirjaimet: %s", joSyotetyt);
+            //wprintf(L"\nSyötetyt kirjaimet: %ls", joSyotetyt);
             index++;
 
             // Vaihe 5: Vertaa syötettyä kirjainta sanan kaikkiin merkkeihin (case insensitive)
