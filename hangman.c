@@ -7,21 +7,22 @@
 #include <locale.h>
 #include <wchar.h>
 
-char* GenerateWord();
+wchar_t* GenerateWord();
 void PrintLogo();
-void VisibleWord(char*, char*, bool, int);
+void VisibleWord(wchar_t*, wchar_t*, bool, int);
 void PrintHangman(int, char*);
 int CheckLetter(wchar_t*, wchar_t*);
 
 
 //Valitse sana randomilla listasta ja palauta se funktiosta
-char* GenerateWord() {
-    char *listasanoja[10] = {"VALTAVA", "PYRAMIDI", "KUUSIKULMIO", "KORVAT", "PALMU", "ENNEUNI", "VAIHTEISTO", "RAHKAPULLA", "MAGNEETTI", "JOHDOT"};
+wchar_t* GenerateWord() {
+    wchar_t *listasanoja[10] = {L"VALTAVA", L"PYRAMIDI", L"HÄIRIINTYÄ", L"KORVAT", L"PALMU", L"ENNEUNI", L"VAIHTEISTO", L"RAHKAPULLA", L"MAGNEETTI", L"JOHDOT"};
     srand(time(NULL));
     int randomindex = (rand() % (9 - 0 + 1)) + 0;
     //printf("%d", randomindex);
     //printf("\n%s", listasanoja[randomindex]);
     return listasanoja[randomindex];
+    //return L"HÄIRIINTYÄ";             //Testattiin ääkkösiä
 }
 
 // Logo
@@ -43,15 +44,15 @@ int CheckLetter(wchar_t *kirjain, wchar_t *kirjainJono) {
     if (*kirjain > 130) {
         if (*kirjain == 132 || *kirjain == 142) {
             //Kirjain ä
-            *kirjain = L'ä';
+            *kirjain = L'Ä';
         }
         else if (*kirjain == 148 || *kirjain == 153) {
             //Kirjain ö
-            *kirjain = L'ö';
+            *kirjain = L'Ö';
         }
         else if (*kirjain == 134 || *kirjain == 143) {
             //Kirjain å
-            *kirjain = L'å';
+            *kirjain = L'Å';
         }
     }
     // Tarkista onko kirjain jo aiemmin syötetty
@@ -64,21 +65,22 @@ int CheckLetter(wchar_t *kirjain, wchar_t *kirjainJono) {
 }
 
 //Tulosta näkyvä sana tai tyhjät merkit
-void VisibleWord(char *ptrWord, char *printedWord, bool format, int hitIndex) {
-    int wordLength = strlen(ptrWord)*2;                             //Lasketaan sanan pituus
-    char shownWord[30] = "";
+void VisibleWord(wchar_t *ptrWord, wchar_t *printedWord, bool format, int hitIndex) {
+    int wordLength = 0;
+    wordLength = wcslen(ptrWord)*2;                             //Lasketaan sanan pituus
+    wchar_t shownWord[30] = L"";
     //printf("\n%d", strlen(ptrWord));
 
     // Ennen arvausta printedWord merkkijonoon alustetaan oikea määrä "_ "-merkkejä 
     if (format == true) {
         for (int i = 0; i<wordLength; i++) {
             if (i%2 == 0) {
-                shownWord[i] = '_';
+                shownWord[i] = L'_';
             }
             else
-                shownWord[i] = ' ';
+                shownWord[i] = L' ';
         }
-        strcpy(printedWord, shownWord);
+        wcscpy(printedWord, shownWord);
     }
 
     // Ei ole alustus
@@ -219,7 +221,7 @@ void PrintHangman(int virheidenMaara, char *teksti) {
 
 void main() {
     wchar_t arvaus;
-    char tulostusrivi[30] = "";
+    wchar_t tulostusrivi[30] = L"";
     wchar_t joSyotetyt[30] = L"";
     int virheita = 0;
     bool voitto = false;
@@ -238,11 +240,11 @@ void main() {
     PrintLogo();
 
     // Vaihe 1: Valitse sana luettelosta randomilla
-    char* sana = GenerateWord();
+    wchar_t *sana = GenerateWord();
 
     // Vaihe 2: Tulosta "_" jokaista sanan merkkiä kohti ja lisää välit
     VisibleWord(sana, tulostusrivi, true, -1);
-    printf("\n%s", tulostusrivi);
+    wprintf(L"\n%s", tulostusrivi);
 
     // Vaihe 3: Tulosta tyhjä kenttä
     PrintHangman(virheita, teksti);
@@ -272,7 +274,8 @@ void main() {
             // Vaihe 5: Vertaa syötettyä kirjainta sanan kaikkiin merkkeihin (case insensitive)
             //          Jos kirjain löytyy sanasta, niin näytä se
             //          Jos kirjainta ei löydy sanasta, lisää virheitä yhdellä
-            for (int i = 0; i<strlen(sana); i++) {
+            for (int i = 0; i<wcslen(sana); i++) {
+                //wprintf(L"\nOnko %d ja %d samat?", tolower((int) arvaus), tolower(sana[i]));
                 if (tolower((int) arvaus) == tolower(sana[i])) {
                     osuma = true;
                     osumia++;
@@ -293,11 +296,11 @@ void main() {
             osuma = false;
         }
         // Jos osumien määrä on sama kuin sanan pituus niin voitto
-        if (osumia == strlen(sana)) {
+        if (osumia == wcslen(sana)) {
             voitto = true;
             strcpy(teksti, "Voitit Pelin");
         }
-        printf("\n%s", tulostusrivi);
+        wprintf(L"\n%s", tulostusrivi);
 
         // Vaihe 3: Tulosta hirsipuun vaihe
         PrintHangman(virheita, teksti);
@@ -306,5 +309,5 @@ void main() {
 }
 
 // TODO: 
-// 1) Ääkkösten kösittely
+// 1) Ääkkösten kösittely (done)
 // 2) Tiedostosta sanojen haku (BONUS)
